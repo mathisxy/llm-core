@@ -8,6 +8,6 @@ from .roles import AIRoles
 class AIMessage(BaseModel):
 
     role: AIRoles
-    chunks: List[AIChunk] = Field(default_factory=list)
+    chunks: List[AIChunk] = Field(default_factory=List[AIChunk])
 
 
