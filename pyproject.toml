@@ -1,9 +1,12 @@
 [project]
 name = "llm-ir"
-version = "0.0.4"
+version = "0.0.6"
 description = "Core message IR for LLM pipelines"
 authors = [{ name="Mathis Siebert" }]
 requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0"  # Hier gibst du die Version von Pydantic an, die du brauchst
+]
 
 [build-system]
 requires = ["setuptools", "wheel"]
