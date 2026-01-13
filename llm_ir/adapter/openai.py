@@ -23,7 +23,7 @@ def chunk_to_openai(chunk: AIChunk) -> dict[str, str]:
         case AIChunkText():
             return {
                 "type": "text",
-                "text": chunk.content,
+                "text": chunk.text,
             }
         case AIChunkImageURL():
             return {
@@ -32,7 +32,7 @@ def chunk_to_openai(chunk: AIChunk) -> dict[str, str]:
             }
         case AIChunkFile():
             if chunk.mimetype.startswith("image/"):
-                base64_data = base64.b64encode(chunk.content).decode('utf-8')
+                base64_data = base64.b64encode(chunk.bytes).decode('utf-8')
                 return {
                     "type": "image_url",
                     "image_url": f"data:{chunk.mimetype};base64,{base64_data}",

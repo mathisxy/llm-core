@@ -1,4 +1,4 @@
-from .chunks import AIChunk, AIChunkText, AIChunkFile
+from .chunks import AIChunk, AIChunkText, AIChunkFile, AIChunkImageURL
 from .roles import AIRoles
 from .messages import AIMessage
 
@@ -8,4 +8,5 @@ __all__ = [
     "AIChunkFile",
     "AIRoles",
     "AIMessage",
+    "AIChunkImageURL",
 ]
