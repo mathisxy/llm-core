@@ -1,6 +1,6 @@
 [project]
 name = "llm-ir"
-version = "0.0.23"
+version = "0.0.24"
 description = "Core message IR for LLM pipelines"
 authors = [{ name="Mathis Siebert" }]
 requires-python = ">=3.11"

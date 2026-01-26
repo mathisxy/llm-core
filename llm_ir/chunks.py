@@ -15,4 +15,10 @@ class AIChunkImageURL(BaseModel):
     type: Literal["image"] = "image"
     url: str
 
+class AIChunkToolCall(BaseModel):
+    id: str
+    name: str
+    arguments: dict[str, object]
+    
+
 AIChunk = Union[AIChunkText, AIChunkFile, AIChunkImageURL]
