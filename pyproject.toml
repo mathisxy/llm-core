@@ -1,7 +1,7 @@
 [project]
-name = "llm-ir"
-version = "0.0.34"
-description = "Core message IR for LLM pipelines"
+name = "llmir"
+version = "0.0.1"
+description = "Core message and tool IR for LLM pipelines"
 authors = [{ name="Mathis Siebert" }]
 requires-python = ">=3.11"
 dependencies = [
