@@ -1,12 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class RichReprMixin(BaseModel):
 
-    MAX_CHARS_PER_VALUE: int = 2000
+    MAX_CHARS_PER_VALUE: int = Field(default=2000, exclude=True)
 
     def __rich_repr__(self):
 
-        for name in self.__class__.model_fields:
+        for name, field_info in self.__class__.model_fields.items():
+            
+            if field_info.exclude:
+                continue
+
             value = getattr(self, name)
             length = len(str(value))
 
