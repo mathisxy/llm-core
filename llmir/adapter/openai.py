@@ -1,6 +1,6 @@
-from typing import TypedDict, Literal
+from typing import TypedDict, Literal, Required
 
-from ..messages import AIMessages, AIMessageToolResponse
+from ..messages import AIMessages, AIMessageToolResponse, AIRoles
 from ..chunks import AIChunkText, AIChunkImageURL, AIChunkFile, AIChunkToolCall
 import base64
 import json
@@ -32,13 +32,13 @@ class OpenAIToolCall(TypedDict):
 OpenAIContents = OpenAIText | OpenAIImageURL
 
 
-class OpenAIMessage(TypedDict):
-    role: str
+class OpenAIMessage(TypedDict, total=False):
+    role: Required[Literal["system", "user", "assistant"]]
     content: list[OpenAIContents]
     tool_calls: list[OpenAIToolCall]
 
-class OpenAIMessageToolResponse(TypedDict):
-    role: Literal["tool"]
+class OpenAIMessageToolResponse(TypedDict, total=False):
+    role: Required[Literal["tool"]]
     tool_call_id: str
     content: str
 
@@ -78,19 +78,69 @@ def to_openai(messages: list[AIMessages]) -> list[OpenAIMessages]:
                         content=[
                             content_chunk_to_openai(chunk) for chunk in media_chunks
                         ],
-                        tool_calls=[]
                     )
                 )
         else:
-            result.append(OpenAIMessage(
-                role= role,
-                content=[
-                    content_chunk_to_openai(chunk) for chunk in message.chunks if not isinstance(chunk, AIChunkToolCall)
-                ],
-                tool_calls=[
-                    tool_call_chunk_to_openai(chunk) for chunk in message.chunks if isinstance(chunk, AIChunkToolCall)
-                ]
-            ))
+            
+            assert(role != "tool")
+            content_chunks: list[AIChunkText | AIChunkFile | AIChunkImageURL] = []
+            tool_call_chunks: list[AIChunkToolCall] = []
+
+            media_chunks: list[AIChunkFile | AIChunkImageURL] = []
+
+            for chunk in message.chunks:
+
+                if isinstance(chunk, AIChunkToolCall):
+                    tool_call_chunks.append(chunk)
+
+                elif role != AIRoles.USER and not isinstance(chunk, AIChunkText):
+                    media_chunks.append(chunk)
+
+                else:
+                    content_chunks.append(chunk)
+
+
+            formatted = OpenAIMessage(
+                role=role
+            )
+
+
+            result.append(
+                OpenAIMessage(
+                    role=role,
+                )
+            )
+            if media_chunks:
+                result.append(
+                    OpenAIMessage(
+                        role="user", # Hacky, but what else to circumvent API limitations in a broadly compatible way?
+                        content=[
+                            content_chunk_to_openai(chunk) for chunk in media_chunks
+                        ],
+                    )
+                )
+
+
+
+            formatted = OpenAIMessage(
+                role=role
+            )
+            if content_chunks:
+                formatted["content"] = [content_chunk_to_openai(c) for c in content_chunks]
+            if tool_call_chunks:
+                formatted["tool_calls"] = [tool_call_chunk_to_openai(c) for c in tool_call_chunks]
+
+            result.append(formatted)
+            
+            if media_chunks:
+                result.append(OpenAIMessage(
+                    role="user",
+                    content=[
+                        content_chunk_to_openai(c) for c in media_chunks
+                    ]
+                )
+            )
+
     return result
 
 
