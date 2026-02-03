@@ -100,46 +100,26 @@ def to_openai(messages: list[AIMessages]) -> list[OpenAIMessages]:
                     content_chunks.append(chunk)
 
 
-            formatted = OpenAIMessage(
-                role=role
-            )
 
-
-            result.append(
-                OpenAIMessage(
-                    role=role,
-                )
-            )
-            if media_chunks:
-                result.append(
-                    OpenAIMessage(
-                        role="user", # Hacky, but what else to circumvent API limitations in a broadly compatible way?
-                        content=[
-                            content_chunk_to_openai(chunk) for chunk in media_chunks
-                        ],
-                    )
-                )
-
-
-
-            formatted = OpenAIMessage(
-                role=role
-            )
-            if content_chunks:
-                formatted["content"] = [content_chunk_to_openai(c) for c in content_chunks]
-            if tool_call_chunks:
-                formatted["tool_calls"] = [tool_call_chunk_to_openai(c) for c in tool_call_chunks]
-
-            result.append(formatted)
-            
             if media_chunks:
                 result.append(OpenAIMessage(
-                    role="user",
+                    role="user", # Hacky too, but what else to circumvent API limitations in a broadly compatible way?
                     content=[
                         content_chunk_to_openai(c) for c in media_chunks
                     ]
                 )
             )
+
+            if content_chunks or tool_call_chunks:
+                formatted = OpenAIMessage(
+                    role=role
+                )
+                if content_chunks:
+                    formatted["content"] = [content_chunk_to_openai(c) for c in content_chunks]
+                if tool_call_chunks:
+                    formatted["tool_calls"] = [tool_call_chunk_to_openai(c) for c in tool_call_chunks]
+
+                result.append(formatted)
 
     return result
 
@@ -175,7 +155,11 @@ def content_chunk_to_openai(chunk: AIChunkText | AIChunkFile | AIChunkImageURL) 
                     text=text
                 )
             else:
-                raise ValueError(f"Unsupported file type for OpenAI: {chunk.mimetype}")
+                return OpenAIText(  # Fallback: represent as text
+                    type="text",
+                    text=f"[Unsupported file type: {chunk.mimetype}, size: {len(chunk.bytes)} bytes, name: {chunk.name}]"
+                )
+                # raise ValueError(f"Unsupported file type for OpenAI: {chunk.mimetype}")
         case _:
             raise ValueError(f"Unsupported chunk type: {type(chunk)}")
         
